@@ -9,7 +9,7 @@
       <li v-for="product in products">
         {{ product.title }} - {{ product.price | currency }} - {{ product.inventory }}
         <button
-          :disabled="!productIsInstock(product)"
+          :disabled="!productIsInStock(product)"
           @click="addProductToCart(product)">Add to cart</button>
       </li>
     </ul>
@@ -17,35 +17,38 @@
 </template>
 
 <script>
+import { mapState, mapGetters, mapActions } from 'vuex';
 
 export default {
   name: "ProductList",
 
   data () {
     return {
-      loading: false
+      loading: false,
+      productIndex: 1
     }
   },
 
   computed: {
-    products () {
-      return this.$store.getters.availableProducts
-    },
+    ...mapState('products', {
+      products: state => state.items
+    }),
 
-    productIsInstock () {
-      return this.$store.getters.productIsInStock
-    }
+    ...mapGetters('products', {
+      productIsInStock: 'productIsInStock'
+    })
   },
 
   methods: {
-    addProductToCart(product) {
-      this.$store.dispatch('addProductToCart', product)
-    }
+    ...mapActions({
+      fetchProducts: 'products/fetchProducts',
+      addProductToCart: 'cart/addProductToCart'
+    }),
   },
 
   created () {
     this.loading = true;
-    this.$store.dispatch('fetchProducts').then(() => {
+    this.fetchProducts().then(() => {
       this.loading = false;
     })
   }
